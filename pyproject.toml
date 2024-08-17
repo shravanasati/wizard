@@ -6,6 +6,9 @@ authors = ["Shravan Asati <dev.shravan@protonmail.com>"]
 readme = "README.md"
 package-mode = true
 
+[tool.poetry.scripts]
+wizard = "wizard.main:main"
+
 [tool.poetry.dependencies]
 python = "^3.11"
 matplotlib = "^3.9.2"
