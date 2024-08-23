@@ -5,6 +5,9 @@ description = "A matplotlib-based sorting visualizer."
 authors = ["Shravan Asati <dev.shravan@protonmail.com>"]
 readme = "README.md"
 package-mode = true
+license = "MIT"
+repository = "https://github.com/shravanasati/wizard"
+keywords = ["sorting", "algorithm", "visualizer"]
 
 [tool.poetry.scripts]
 wizard = "wizard.main:main"

@@ -10,6 +10,7 @@ class SortingAlgorithm(StrEnum):
     """
     Enum representing a sorting algorithm.
     """
+
     BUBBLE_SORT = auto()
     SELECTION_SORT = auto()
     INSERTION_SORT = auto()
@@ -25,13 +26,6 @@ class SortingAlgorithm(StrEnum):
 
 # type alias for a matplotlib.animation.FuncAnimation update func
 AnimationUpdaterFunc = Callable[[int], BarContainer]
-
-
-def _swap(A: np.ndarray, i: int, j: int):
-    """
-    Helper function to swap elements in a numpy ndarray.
-    """
-    A[i], A[j] = A[j], A[i]
 
 
 class SortingVisualizer:
@@ -51,9 +45,30 @@ class SortingVisualizer:
         self.axes.get_xaxis().set_visible(False)
         self.axes.get_yaxis().set_visible(False)
 
-    def selection_sort_update(self, frame):
+    def _reset_bars_to_arr(self):
         for i, b in enumerate(self.bar):
-            b.set_color("#1f77b4")
+            b.set_height(self.arr[i])
+
+    def _set_bars_to_color(self, color: str):
+        for b in self.bar:
+            b.set_color(color)
+
+    def _set_bars_blue(self):
+        self._set_bars_to_color("#1f77b4")
+
+    def _set_bars_green(self):
+        self._set_bars_to_color("green")
+
+    def _swap(self, i: int, j: int):
+        """
+        Helper function to swap elements in self.arr, along with setting colors of changed bars to red.
+        """
+        self.arr[i], self.arr[j] = self.arr[j], self.arr[i]
+        self.bar[i].set_color("red")
+        self.bar[j].set_color("red")
+
+    def selection_sort_update(self, frame):
+        self._set_bars_blue()
 
         size = len(self.arr)
         ind = frame
@@ -62,59 +77,45 @@ class SortingVisualizer:
             if self.arr[j] < self.arr[min_index]:
                 min_index = j
 
-        _swap(self.arr, ind, min_index)
-        self.bar[ind].set_color("red")
-        self.bar[min_index].set_color("red")
+        self._swap(ind, min_index)
 
-        for i, b in enumerate(self.bar):
-            b.set_height(self.arr[i])
+        self._reset_bars_to_arr()
 
         if frame == size - 1:
-            for i, b in enumerate(self.bar):
-                b.set_color("green")
+            self._set_bars_green()
 
         return self.bar
 
     def bubble_sort_update(self, frame):
-        for i, b in enumerate(self.bar):
-            b.set_color("#1f77b4")
+        self._set_bars_blue()
 
         size = len(self.arr)
         ind = frame
         for j in range(size - ind - 1):
             if self.arr[j] > self.arr[j + 1]:
-                _swap(self.arr, j, j + 1)
-                self.bar[j].set_color("red")
-                self.bar[j + 1].set_color("red")
+                self._swap(j, j + 1)
 
-        for i, b in enumerate(self.bar):
-            b.set_height(self.arr[i])
+        self._reset_bars_to_arr()
 
         if frame == size - 1:
-            for i, b in enumerate(self.bar):
-                b.set_color("green")
+            self._set_bars_green()
 
         return self.bar
 
     def insertion_sort_update(self, frame):
-        for i, b in enumerate(self.bar):
-            b.set_color("#1f77b4")
+        self._set_bars_blue()
 
         size = len(self.arr)
         ind = frame
         j = ind - 1
         while self.arr[j] > self.arr[j + 1] and j >= 0:
-            _swap(self.arr, j , j + 1)
-            self.bar[j].set_color("red")
-            self.bar[j + 1].set_color("red")
+            self._swap(j, j + 1)
             j -= 1
 
-        for i, b in enumerate(self.bar):
-            b.set_height(self.arr[i])
+        self._reset_bars_to_arr()
 
         if frame == size - 1:
-            for i, b in enumerate(self.bar):
-                b.set_color("green")
+            self._set_bars_green()
 
         return self.bar
 
@@ -133,13 +134,26 @@ class SortingVisualizer:
 
         return update_func
 
+    def _get_frames(self):
+        match self.algorithm:
+            case (
+                SortingAlgorithm.BUBBLE_SORT
+                | SortingAlgorithm.SELECTION_SORT
+                | SortingAlgorithm.INSERTION_SORT
+            ):
+                return self.N_ELEMENTS
+
+            case _:
+                raise ValueError(f"unknown sorting algorithm={self.algorithm.value}")
+
     def animate(self):
         update_func = self._get_update_func()
+        frames = self._get_frames()
 
         self.anim = animation.FuncAnimation(
             fig=self.fig,
             func=update_func,
-            frames=self.N_ELEMENTS,
+            frames=frames,
             interval=100,
             repeat=False,
             blit=True,
