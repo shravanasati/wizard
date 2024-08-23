@@ -1,3 +1,4 @@
+from typing import NamedTuple
 from enum import StrEnum, auto
 from typing import Callable
 from matplotlib.container import BarContainer
@@ -24,26 +25,30 @@ class SortingAlgorithm(StrEnum):
         return " ".join(map(lambda x: x.capitalize(), splitt))
 
 
+class VisualizerConfig(NamedTuple):
+    algorithm: SortingAlgorithm
+    elements: int
+    speed: float  # speed factor
+
+
 # type alias for a matplotlib.animation.FuncAnimation update func
 AnimationUpdaterFunc = Callable[[int], BarContainer]
 
 
 class SortingVisualizer:
-    # todo implement speed
-    def __init__(self, algorithm: SortingAlgorithm, elements: int) -> None:
-        self.N_ELEMENTS = elements
-        self.algorithm = algorithm
+    def __init__(self, config: VisualizerConfig) -> None:
+        self.config = config
 
-        self.arr = np.random.randint(1, 101, self.N_ELEMENTS)
+        self.arr = np.random.randint(1, 101, self.config.elements)
 
         self.fig, self.axes = plt.subplots()
 
-        self.bar = self.axes.bar(range(1, self.N_ELEMENTS + 1), self.arr)
-        self.axes.set_title(f"Visualizing {algorithm.algorithm_name()}")
-        self.axes.set_xlim(0, self.N_ELEMENTS + 1)
+        self.bar = self.axes.bar(range(1, self.config.elements + 1), self.arr)
+        self.axes.set_title(f"Visualizing {config.algorithm.algorithm_name()}")
+        self.axes.set_xlim(0, self.config.elements + 1)
         self.axes.set_ylim(0, 110)
         self.axes.get_xaxis().set_visible(False)
-        self.axes.get_yaxis().set_visible(False)
+        # self.axes.get_yaxis().set_visible(False)
 
     def _reset_bars_to_arr(self):
         for i, b in enumerate(self.bar):
@@ -121,7 +126,7 @@ class SortingVisualizer:
 
     def _get_update_func(self) -> AnimationUpdaterFunc:
         update_func: AnimationUpdaterFunc | None = None
-        match self.algorithm:
+        match self.config.algorithm:
             case SortingAlgorithm.BUBBLE_SORT:
                 update_func = self.bubble_sort_update
             case SortingAlgorithm.INSERTION_SORT:
@@ -130,47 +135,40 @@ class SortingVisualizer:
                 update_func = self.selection_sort_update
 
             case _:
-                raise ValueError(f"unknown sorting algorithm={self.algorithm.value}")
+                raise ValueError(
+                    f"unknown sorting algorithm={self.config.algorithm.value}"
+                )
 
         return update_func
 
     def _get_frames(self):
-        match self.algorithm:
+        match self.config.algorithm:
             case (
                 SortingAlgorithm.BUBBLE_SORT
                 | SortingAlgorithm.SELECTION_SORT
                 | SortingAlgorithm.INSERTION_SORT
             ):
-                return self.N_ELEMENTS
+                return self.config.elements
 
             case _:
-                raise ValueError(f"unknown sorting algorithm={self.algorithm.value}")
+                raise ValueError(
+                    f"unknown sorting algorithm={self.config.algorithm.value}"
+                )
 
     def animate(self):
         update_func = self._get_update_func()
         frames = self._get_frames()
+        interval = 500 / self.config.speed  # milliseconds
 
         self.anim = animation.FuncAnimation(
             fig=self.fig,
             func=update_func,
             frames=frames,
-            interval=100,
+            interval=interval,
             repeat=False,
             blit=True,
         )
         plt.show()
-
-    def save_animation(self):
-        # Create a new animation for saving
-        update_func = self._get_update_func()
-        save_anim = animation.FuncAnimation(
-            fig=self.fig,
-            func=update_func,
-            frames=self.N_ELEMENTS,
-            interval=100,
-            repeat=False,
-        )
-        save_anim.save(filename="demo.html", writer="html")
 
 
 # if __name__ == "__main__":

@@ -1,6 +1,7 @@
-from wizard.visualizer import SortingAlgorithm, SortingVisualizer
+from wizard.visualizer import SortingAlgorithm, SortingVisualizer, VisualizerConfig
 
 
 def main():
-    wiz = SortingVisualizer(SortingAlgorithm.SELECTION_SORT, 82)
+    config = VisualizerConfig(SortingAlgorithm.INSERTION_SORT, 82, 5)
+    wiz = SortingVisualizer(config)
     wiz.animate()
