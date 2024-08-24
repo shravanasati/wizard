@@ -16,6 +16,7 @@ wizard = "wizard.main:main"
 python = "^3.11"
 matplotlib = "^3.9.2"
 numpy = "^2.0.1"
+sv-ttk = "^2.6.0"
 
 
 [build-system]
