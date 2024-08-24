@@ -2,6 +2,6 @@ from wizard.visualizer import SortingAlgorithm, SortingVisualizer, VisualizerCon
 
 
 def main():
-    config = VisualizerConfig(SortingAlgorithm.INSERTION_SORT, 82, 5)
+    config = VisualizerConfig(SortingAlgorithm.SELECTION_SORT, 65, 15)
     wiz = SortingVisualizer(config)
     wiz.animate()

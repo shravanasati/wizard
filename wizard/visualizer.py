@@ -15,6 +15,7 @@ class SortingAlgorithm(StrEnum):
     BUBBLE_SORT = auto()
     SELECTION_SORT = auto()
     INSERTION_SORT = auto()
+    BOGO_SORT = auto()
 
     def algorithm_name(self):
         """
@@ -40,6 +41,10 @@ class SortingVisualizer:
         self.config = config
 
         self.arr = np.random.randint(1, 101, self.config.elements)
+        self.sorted_arr = sorted(self.arr)
+        self._is_sorted = list(self.arr) == self.sorted_arr
+
+        self._stalin_write_index = 1
 
         self.fig, self.axes = plt.subplots()
 
@@ -124,6 +129,18 @@ class SortingVisualizer:
 
         return self.bar
 
+    def bogo_sort_update(self, frame):
+        np.random.shuffle(self.arr)
+        self._reset_bars_to_arr()
+        self._is_sorted = list(self.arr) == self.sorted_arr
+        if self._is_sorted:
+            self._set_bars_green()
+        return self.bar
+
+    def _bogo_sort_frames(self):
+        while not self._is_sorted:
+            yield 1
+
     def _get_update_func(self) -> AnimationUpdaterFunc:
         update_func: AnimationUpdaterFunc | None = None
         match self.config.algorithm:
@@ -133,6 +150,8 @@ class SortingVisualizer:
                 update_func = self.insertion_sort_update
             case SortingAlgorithm.SELECTION_SORT:
                 update_func = self.selection_sort_update
+            case SortingAlgorithm.BOGO_SORT:
+                update_func = self.bogo_sort_update
 
             case _:
                 raise ValueError(
@@ -149,6 +168,9 @@ class SortingVisualizer:
                 | SortingAlgorithm.INSERTION_SORT
             ):
                 return self.config.elements
+
+            case SortingAlgorithm.BOGO_SORT:
+                return self._bogo_sort_frames
 
             case _:
                 raise ValueError(
