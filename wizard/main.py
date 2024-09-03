@@ -6,6 +6,7 @@ from wizard.visualizer import SortingAlgorithm, SortingVisualizer, VisualizerCon
 
 def visualize(algo_name: str, elements: int, speed: float):
     # auto in StrEnum generates values as lowered names
+    # transforming "Algo Sort" to "algo_sort"
     algo = algo_name.lower().replace(" ", "_")
     config = VisualizerConfig(SortingAlgorithm(algo), elements, speed)
     wiz = SortingVisualizer(config)
@@ -16,7 +17,8 @@ def main():
     root = tk.Tk()
     root.title("wizard - Sorting Algorithm Visualizer")
     root.geometry("800x600")
-    tk.Label(root, text="wizard", font=("Segoe UI", 40, "bold")).pack(pady=10)
+    tk.Label(root, text="wizard 🪄", font=("Segoe UI", 40, "bold")).pack(pady=10)
+    tk.Label(root, text="a sorting algorithm visualizer", font=("Segoe UI", 25, "bold")).pack(pady=7)
 
     algorithms = [a.algorithm_name() for a in SortingAlgorithm]
 

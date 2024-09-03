@@ -1,3 +1,4 @@
+import random
 from typing import NamedTuple
 from enum import StrEnum, auto
 from typing import Callable
@@ -16,6 +17,8 @@ class SortingAlgorithm(StrEnum):
     SELECTION_SORT = auto()
     INSERTION_SORT = auto()
     BOGO_SORT = auto()
+    QUICK_SORT = auto()
+    MERGE_SORT = auto()
 
     def algorithm_name(self):
         """
@@ -44,8 +47,6 @@ class SortingVisualizer:
         self.sorted_arr = sorted(self.arr)
         self._is_sorted = list(self.arr) == self.sorted_arr
 
-        self._stalin_write_index = 1
-
         self.fig, self.axes = plt.subplots()
 
         self.bar = self.axes.bar(range(1, self.config.elements + 1), self.arr)
@@ -54,6 +55,13 @@ class SortingVisualizer:
         self.axes.set_ylim(0, 110)
         self.axes.get_xaxis().set_visible(False)
         # self.axes.get_yaxis().set_visible(False)
+
+        # quick sort setup
+        self._qs_stack = [0] * (self.config.elements)
+        self._qs_top = 0
+        self._qs_stack[self._qs_top] = 0
+        self._qs_top += 1
+        self._qs_stack[self._qs_top] = self.config.elements - 1
 
     def _reset_bars_to_arr(self):
         for i, b in enumerate(self.bar):
@@ -141,6 +149,62 @@ class SortingVisualizer:
         while not self._is_sorted:
             yield 1
 
+    def __partition_arr(self, low: int, high: int):
+        self._set_bars_blue()
+        pivot_index = random.randrange(low, high + 1)
+        self.bar[pivot_index].set_color("orange")
+        self._swap(pivot_index, high)
+        self._reset_bars_to_arr()
+        pivot = self.arr[high]
+
+        smaller = low - 1
+        for j in range(low, high):
+            if self.arr[j] <= pivot:
+                smaller += 1
+                self._swap(smaller, j)
+                self._reset_bars_to_arr()
+
+        self._swap(smaller + 1, high)
+        return smaller + 1
+
+    def quick_sort_update(self, frame):
+        h = self._qs_stack[self._qs_top]
+        self._qs_top -= 1
+        l = self._qs_stack[self._qs_top]
+        self._qs_top -= 1
+
+        # Set pivot element at its correct position in
+        # sorted array
+        p = self.__partition_arr(l, h)
+        self._reset_bars_to_arr()
+
+        # If there are elements on left side of pivot,
+        # then push left side to self.stack
+        if p - 1 > l:
+            self._qs_top += 1
+            self._qs_stack[self._qs_top] = l
+            self._qs_top += 1
+            self._qs_stack[self._qs_top] = p - 1
+
+        # If there are elements on right side of pivot,
+        # then push right side to self.stack
+        if p + 1 < h:
+            self._qs_top += 1
+            self._qs_stack[self._qs_top] = p + 1
+            self._qs_top += 1
+            self._qs_stack[self._qs_top] = h
+
+        if self._qs_top < 0:
+            self._set_bars_green()
+
+        return self.bar
+
+    def _quick_sort_frames(self):
+        while self._qs_top >= 0:
+            yield 1
+
+        yield 1
+
     def _get_update_func(self) -> AnimationUpdaterFunc:
         update_func: AnimationUpdaterFunc | None = None
         match self.config.algorithm:
@@ -152,6 +216,10 @@ class SortingVisualizer:
                 update_func = self.selection_sort_update
             case SortingAlgorithm.BOGO_SORT:
                 update_func = self.bogo_sort_update
+            case SortingAlgorithm.QUICK_SORT:
+                update_func = self.quick_sort_update
+            case SortingAlgorithm.MERGE_SORT:
+                update_func = self.merge_sort_update
 
             case _:
                 raise ValueError(
@@ -171,6 +239,9 @@ class SortingVisualizer:
 
             case SortingAlgorithm.BOGO_SORT:
                 return self._bogo_sort_frames
+
+            case SortingAlgorithm.QUICK_SORT:
+                return self._quick_sort_frames
 
             case _:
                 raise ValueError(
