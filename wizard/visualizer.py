@@ -1,3 +1,4 @@
+from math import floor, log2
 import random
 from typing import NamedTuple
 from enum import StrEnum, auto
@@ -205,6 +206,57 @@ class SortingVisualizer:
 
         yield 1
 
+    def __merge(self, left: int, mid: int, right: int):
+        # Initialize pointers for the two subarrays
+        i = left
+        j = mid + 1
+
+        # Merge the two subarrays in place
+        while i <= mid and j <= right:
+            if self.arr[i] <= self.arr[j]:
+                i += 1
+            else:
+                # Element at j is smaller; shift elements to the right
+                value = self.arr[j]
+                index = j
+
+                # Shift all elements between i and j to the right by one
+                while index != i:
+                    self.arr[index] = self.arr[index - 1]
+                    self.bar[index].set_color("red")
+                    index -= 1
+
+                # Place the value at the correct location
+                self.arr[i] = value
+
+                # Update the visualization after each shift
+                self._reset_bars_to_arr()
+
+                # Update pointers
+                i += 1
+                mid += 1
+                j += 1
+
+    def merge_sort_update(self, frame):
+        n = self.config.elements
+        for left in range(0, n, 2 * frame):
+            mid = min(left + frame - 1, n - 1)
+            right = min(left + 2 * frame - 1, n - 1)
+
+            # Merge subarrays arr[left...mid] and arr[mid+1...right]
+            self.__merge(left, mid, right)
+
+        if frame == 2 ** (floor(log2(n))):
+            self._set_bars_green()
+
+        return self.bar
+
+    def _merge_sort_frames(self):
+        curr_size = 1
+        while curr_size < self.config.elements:
+            yield curr_size
+            curr_size *= 2
+
     def _get_update_func(self) -> AnimationUpdaterFunc:
         update_func: AnimationUpdaterFunc | None = None
         match self.config.algorithm:
@@ -242,6 +294,9 @@ class SortingVisualizer:
 
             case SortingAlgorithm.QUICK_SORT:
                 return self._quick_sort_frames
+
+            case SortingAlgorithm.MERGE_SORT:
+                return self._merge_sort_frames
 
             case _:
                 raise ValueError(
