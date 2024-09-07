@@ -5,7 +5,7 @@ wizard is a matplotlib-based sorting algorithm visualizer.
 ### Installation
 
 ```
-pipx install wizard-av
+pipx install git+https://github.com/shravanasati/wizard
 ```
 
 ### Setup Development Environment

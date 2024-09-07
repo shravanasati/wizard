@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "wizard-av"
+name = "wizard"
 version = "0.1.0"
 description = "A matplotlib-based sorting visualizer."
 authors = ["Shravan Asati <dev.shravan@protonmail.com>"]
@@ -10,7 +10,7 @@ repository = "https://github.com/shravanasati/wizard"
 keywords = ["sorting", "algorithm", "visualizer"]
 
 [tool.poetry.scripts]
-wizard = "wizard-av.main:main"
+wizard = "wizard.main:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
